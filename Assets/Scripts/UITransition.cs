@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 
 [RequireComponent(typeof(UIElement))]
 public class UITransition : MonoBehaviour
@@ -41,19 +43,12 @@ public class UITransition : MonoBehaviour
 
     private UIPanel _parentPanel;
 
-    private WaitForSeconds _waitForshowDuration;
-    private WaitForSeconds _waitForHideDuration;
-
     private CanvasGroup _canvasGroup;
 
     public void Init(UIPanel parent)
     {
         _parentPanel = parent;
-
-        _waitForshowDuration = new WaitForSeconds(_showTransitionTime);
-        _waitForHideDuration = new WaitForSeconds(_hideTransitionTime);
         _canvasGroup = GetComponent<CanvasGroup>();
-
     }
 
     public void PreShowSetup()
@@ -88,8 +83,9 @@ public class UITransition : MonoBehaviour
         }
     }
 
-    public void ShowTransition()
+    public async void ShowTransition()
     {
+        await UniTask.Delay(TimeSpan.FromSeconds(_showDelay));
         _onStartShow.Invoke();
 
         switch (_transitionType)
@@ -117,13 +113,15 @@ public class UITransition : MonoBehaviour
                 }
             default:
                 {
+                    NotifyFinishShow();
                     return;
                 }
         }
     }
 
-    public void HideTransition()
+    public async void HideTransition()
     {
+        await UniTask.Delay(TimeSpan.FromSeconds(_hideDelay));
         _onStartHide.Invoke();
         
         switch (_transitionType)
@@ -152,11 +150,10 @@ public class UITransition : MonoBehaviour
                 }
             default:
                 {
+                    NotifyFinishHide();
                     return;
                 }
         }
-
-        //hideDescription.setEase(_hideLeanTweenType);
     }
 
     private void NotifyFinishShow()
