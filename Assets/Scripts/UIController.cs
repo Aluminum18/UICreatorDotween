@@ -1,6 +1,5 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using UniRx;
 using UnityEngine;
 
 public class UIController : MonoBehaviour
@@ -49,10 +48,10 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
-        InitAllUIPanels();
+        InitAllUIPanels().Forget();
     }
 
-    private void InitAllUIPanels()
+    private async UniTaskVoid InitAllUIPanels()
     {
         for (int i = 0; i < _UIPanels.Count; i++)
         {
@@ -67,11 +66,9 @@ public class UIController : MonoBehaviour
 
             if (panel.ShowFromStart)
             {
-                // the init frame handles very 
-                Observable.TimerFrame(2).Subscribe(_ =>
-                {
-                    panel.Open();
-                });
+                // the init frame handles very heavy logic, showing animation from beginning often causes lagging
+                await UniTask.DelayFrame(2);
+                panel.Open();
             }
         }
     }

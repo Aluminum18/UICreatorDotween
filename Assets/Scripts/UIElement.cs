@@ -53,7 +53,7 @@ public class UIElement : MonoBehaviour
             yield break;
         }
 
-        _transition.ShowTransition();
+        _transition.ShowTransition().Forget();
     }
 
     private IEnumerator IE_Hide()
@@ -67,6 +67,6 @@ public class UIElement : MonoBehaviour
             yield break;
         }
 
-        _transition.HideTransition();
+        _transition.HideTransition().Forget();
     }
 }

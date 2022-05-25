@@ -49,13 +49,10 @@ public class UIPanel : MonoBehaviour
         }
 
         _rayCaster = GetComponent<GraphicRaycaster>();
-        if (_rayCaster == null)
-        {
-            Debug.LogWarning($"Missing graphic raycaster of [{gameObject.name}]", this);
-        }
-        else
+        if (_rayCaster != null)
         {
             _rayCaster.enabled = false;
+
         }
 
         _uiController = controller;
@@ -117,7 +114,10 @@ public class UIPanel : MonoBehaviour
             _uiController?.PopFromStack();
         }
 
-        _rayCaster.enabled = false;
+        if (_rayCaster != null)
+        {
+            _rayCaster.enabled = false;
+        }
 
         for (int i = 0; i < _elements.Count; i++)
         {
@@ -139,7 +139,10 @@ public class UIPanel : MonoBehaviour
         _showedElements++;
         if (_showedElements == _elements.Count)
         {
-            _rayCaster.enabled = true;
+            if (_rayCaster != null)
+            {
+                _rayCaster.enabled = true;
+            }
             _onAllElementsShown?.Invoke();
         }
     }

@@ -83,7 +83,7 @@ public class UITransition : MonoBehaviour
         }
     }
 
-    public async void ShowTransition()
+    public async UniTaskVoid ShowTransition()
     {
         await UniTask.Delay(TimeSpan.FromSeconds(_showDelay));
         _onStartShow.Invoke();
@@ -119,7 +119,7 @@ public class UITransition : MonoBehaviour
         }
     }
 
-    public async void HideTransition()
+    public async UniTaskVoid HideTransition()
     {
         await UniTask.Delay(TimeSpan.FromSeconds(_hideDelay));
         _onStartHide.Invoke();
