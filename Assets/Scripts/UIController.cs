@@ -10,6 +10,18 @@ public class UIController : MonoBehaviour
     // Store UI panel following opening order
     private Stack<UIPanel> _panelStack = new Stack<UIPanel>();
 
+    public bool IsOnTop(UIPanel panel)
+    {
+        if (_panelStack.Count == 0)
+        {
+            return false;
+        }
+
+        var topPanel = _panelStack.Peek();
+
+        return panel.GetInstanceID() == topPanel.GetInstanceID();
+    }
+
     public void PushToStack(UIPanel panel)
     {
         if (_panelStack.Count > 0)
@@ -43,6 +55,20 @@ public class UIController : MonoBehaviour
         else
         {
             PopFromStack();
+        }
+    }
+
+    public void CloseAllButInitPanels()
+    {
+        while (_panelStack.Count > 0)
+        {
+            var panel = _panelStack.Peek();
+            if (panel.ShowFromStart)
+            {
+                break;
+            }
+
+            panel.Close();
         }
     }
 

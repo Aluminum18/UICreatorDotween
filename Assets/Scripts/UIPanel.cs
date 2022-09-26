@@ -19,12 +19,13 @@ public class UIPanel : MonoBehaviour
     private UnityEvent _onAllElementsShown;
     [SerializeField]
     private UnityEvent _onAllElementsHided;
+    [field: SerializeField]
+    public bool IsOpening { get; set; }
 
     private UIController _uiController;
     private Canvas _canvas;
     private GraphicRaycaster _rayCaster;
 
-    public bool IsOpening { get; set; }
 
     [SerializeField]
     private int _showedElements = 0;
@@ -36,6 +37,10 @@ public class UIPanel : MonoBehaviour
         get
         {
             return _showFromStart;
+        }
+        set
+        {
+            _showFromStart = value;
         }
     }
 
@@ -92,7 +97,7 @@ public class UIPanel : MonoBehaviour
         }
 
         IsOpening = true;
-        _uiController?.PushToStack(this);
+        _uiController.PushToStack(this);
     }
 
     public void Close()
@@ -109,9 +114,9 @@ public class UIPanel : MonoBehaviour
 
         // panel is on top, pop it.
         // if it is not on top, just close and it will be pop later
-        if (transform.GetSiblingIndex() == transform.parent.childCount - 1)
+        if (_uiController.IsOnTop(this))
         {
-            _uiController?.PopFromStack();
+            _uiController.PopFromStack();
         }
 
         if (_rayCaster != null)
@@ -132,6 +137,11 @@ public class UIPanel : MonoBehaviour
         Close();
 
         _showNextAfterThisHide = other;
+    }
+
+    public void CloseAllButInitPanels()
+    {
+        _uiController.CloseAllButInitPanels();
     }
 
     public void NotifyElementShowed()

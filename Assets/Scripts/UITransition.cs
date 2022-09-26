@@ -20,7 +20,7 @@ public class UITransition : MonoBehaviour
     private float _showTransitionTime;
     [SerializeField]
     private Ease _showEaseType;
-
+ 
     [SerializeField]
     private float _hideDelay = 0f;
     [SerializeField]
@@ -42,13 +42,14 @@ public class UITransition : MonoBehaviour
     private UnityEvent _onFinishHide;
 
     private UIPanel _parentPanel;
-
     private CanvasGroup _canvasGroup;
+    private Animator _animator;
 
     public void Init(UIPanel parent)
     {
         _parentPanel = parent;
         _canvasGroup = GetComponent<CanvasGroup>();
+        _animator = GetComponent<Animator>();
     }
 
     public void PreShowSetup()
@@ -74,6 +75,10 @@ public class UITransition : MonoBehaviour
             case TransitionType.Zoom:
                 {
                     transform.localScale = _showFrom;
+                    break;
+                }
+            case TransitionType.Animation:
+                {
                     break;
                 }
             default:
@@ -111,6 +116,23 @@ public class UITransition : MonoBehaviour
                     transform.DOScale(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
                     break;
                 }
+            case TransitionType.Animation:
+                {
+                    if (_animator == null)
+                    {
+                        Debug.LogWarning("In order to use Animation Transition, add Animator Component to this object", this);
+                        return;
+                    }
+
+                    _animator.Play("Open");
+
+                    await UniTask.DelayFrame(1);
+                    float clipTime = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime));
+
+                    NotifyFinishShow();
+                    break;
+                }
             default:
                 {
                     NotifyFinishShow();
@@ -134,7 +156,6 @@ public class UITransition : MonoBehaviour
                         return;
                     }
 
-                    //hideDescription = LeanTween.alphaCanvas(_canvasGroup, _from.x, _hideTransitionTime);
                     _canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
                     break;
                 }
@@ -146,6 +167,23 @@ public class UITransition : MonoBehaviour
             case TransitionType.Zoom:
                 {
                     transform.DOScale(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
+                    break;
+                }
+            case TransitionType.Animation:
+                {
+                    if (_animator == null)
+                    {
+                        Debug.LogWarning("In order to use Animation Transition, add Animator Component to this object", this);
+                        return;
+                    }
+
+                    _animator.Play("Close");
+
+                    await UniTask.DelayFrame(1);
+                    float clipTime = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
+                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime));
+
+                    NotifyFinishHide();
                     break;
                 }
             default:
@@ -174,5 +212,6 @@ public enum TransitionType
     None = 0,
     Move = 1,
     Zoom = 2,
-    Fade = 3
+    Fade = 3,
+    Animation = 4
 }
