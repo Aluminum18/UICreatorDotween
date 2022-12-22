@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Canvas))]
+[RequireComponent(typeof(CanvasGroup))]
+[RequireComponent(typeof(GraphicRaycaster))]
 public class UIPanel : MonoBehaviour
 {
     [Header("Config")]
@@ -18,17 +21,28 @@ public class UIPanel : MonoBehaviour
     [SerializeField]
     private UnityEvent _onAllElementsShown;
     [SerializeField]
+    private UnityEvent _onStartHide;
+    [SerializeField]
     private UnityEvent _onAllElementsHided;
     [field: SerializeField]
-    public bool IsOpening { get; set; }
+    public PanelStatus Status { get; private set; }
 
     private UIController _uiController;
     private Canvas _canvas;
+    private CanvasGroup _canvasGroup;
     private GraphicRaycaster _rayCaster;
-
 
     [SerializeField]
     private int _showedElements = 0;
+
+    [System.Serializable]
+    public enum PanelStatus
+    {
+        IsClosing = 0b1,
+        Closed = 0b10,
+        IsOpening = 0b100,
+        Opened = 0b1000,
+    }
 
     private UIPanel _showNextAfterThisHide;
 
@@ -47,18 +61,11 @@ public class UIPanel : MonoBehaviour
     public void Init(UIController controller)
     {
         _canvas = GetComponent<Canvas>();
-        if (_canvas == null)
-        {
-            Debug.LogError($"Missing canvas of [{gameObject.name}]", this);
-            return;
-        }
-
+        _canvasGroup = GetComponent<CanvasGroup>();
         _rayCaster = GetComponent<GraphicRaycaster>();
-        if (_rayCaster != null)
-        {
-            _rayCaster.enabled = false;
-
-        }
+        _canvas.enabled = false;
+        _canvasGroup.interactable = false;
+        _rayCaster.enabled = false;
 
         _uiController = controller;
 
@@ -66,8 +73,6 @@ public class UIPanel : MonoBehaviour
         {
             return;
         }
-
-        _canvas.enabled = false;
 
         for (int i = 0; i < _elements.Count; i++)
         {
@@ -77,7 +82,7 @@ public class UIPanel : MonoBehaviour
 
     public void Open()
     {
-        if (IsOpening)
+        if (Status == PanelStatus.Opened || Status == PanelStatus.IsOpening)
         {
             return;
         }
@@ -87,8 +92,17 @@ public class UIPanel : MonoBehaviour
             return;
         }
 
+        // Handle case: a Panel is asked to open while it is closing
+        if (Status == PanelStatus.IsClosing)
+        {
+            ForcePanelToClosedState();
+        }
+
         _canvas.enabled = true;
+        _rayCaster.enabled = true;
         transform.SetAsLastSibling();
+
+        Status = PanelStatus.IsOpening;
 
         _onStartShow.Invoke();
         for (int i = 0; i < _elements.Count; i++)
@@ -96,13 +110,12 @@ public class UIPanel : MonoBehaviour
             _elements[i].Show();
         }
 
-        IsOpening = true;
         _uiController.PushToStack(this);
     }
 
     public void Close()
     {
-        if (!IsOpening)
+        if (Status == PanelStatus.Closed || Status == PanelStatus.IsClosing)
         {
             return;
         }
@@ -112,6 +125,14 @@ public class UIPanel : MonoBehaviour
             return;
         }
 
+        // Handle case: a Panel is asked to close while it is opening
+        if (Status == PanelStatus.IsOpening)
+        {
+            ForcePanelToOpenedState();
+        }
+
+        Status = PanelStatus.IsClosing;
+        _onStartHide.Invoke();
         // panel is on top, pop it.
         // if it is not on top, just close and it will be pop later
         if (_uiController.IsOnTop(this))
@@ -119,17 +140,11 @@ public class UIPanel : MonoBehaviour
             _uiController.PopFromStack();
         }
 
-        if (_rayCaster != null)
-        {
-            _rayCaster.enabled = false;
-        }
-
+        _canvasGroup.interactable = false;
         for (int i = 0; i < _elements.Count; i++)
         {
             _elements[i].Hide();
         }
-
-        IsOpening = false;
     }
 
     public void CloseAndOpenOther(UIPanel other)
@@ -147,27 +162,30 @@ public class UIPanel : MonoBehaviour
     public void NotifyElementShowed()
     {
         _showedElements++;
-        if (_showedElements == _elements.Count)
+        if (_showedElements >= _elements.Count)
         {
-            if (_rayCaster != null)
-            {
-                _rayCaster.enabled = true;
-            }
-            _onAllElementsShown?.Invoke();
+            _showedElements = _elements.Count;
+            FinishOpenProcess();
         }
+    }
+
+    private void FinishOpenProcess()
+    {
+        _canvasGroup.interactable = true;
+        _onAllElementsShown?.Invoke();
+        Status = PanelStatus.Opened;
     }
 
     public void NotifyElementHided()
     {
         _showedElements--;
-        if (_showedElements != 0)
+        if (_showedElements > 0)
         {
             return;
         }
 
-        _canvas.enabled = false;
-        _onAllElementsHided?.Invoke();
-        transform.SetAsFirstSibling();
+        _showedElements = 0;
+        FinishCloseProcess();
 
         if (_showNextAfterThisHide == null)
         {
@@ -178,9 +196,18 @@ public class UIPanel : MonoBehaviour
         _showNextAfterThisHide = null;
     }
 
+    private void FinishCloseProcess()
+    {
+        _canvas.enabled = false;
+        _rayCaster.enabled = false;
+        _onAllElementsHided?.Invoke();
+        Status = PanelStatus.Closed;
+        transform.SetAsFirstSibling();
+    }
+
     public void SetInteractable(bool interactable)
     {
-        _rayCaster.enabled = interactable;
+        _canvasGroup.interactable = interactable;
     }
 
     public void SetMoveToFront()
@@ -188,8 +215,32 @@ public class UIPanel : MonoBehaviour
         transform.SetAsLastSibling();
     }
 
+    private void ForcePanelToOpenedState()
+    {
+        _showedElements = _elements.Count;
+        _canvas.enabled = true;
+        _rayCaster.enabled = true;
+        transform.SetAsLastSibling();
+        Status = PanelStatus.Opened;
+
+        FinishOpenProcess();
+    }
+
+    private void ForcePanelToClosedState()
+    {
+        _showedElements = 0;
+        _canvasGroup.interactable = false;
+
+        FinishCloseProcess();
+    }
+
     private bool ValidateElements()
     {
+        if (_uiController == null)
+        {
+            return false;
+        }
+
         if (_elements.Count == 0)
         {
             Debug.LogWarning($"No element found in {gameObject.name}", this);

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +13,6 @@ public class UIElement : MonoBehaviour
     private UIPanel _parentPanel;
 
     private UITransition _transition;
-    private WaitForSeconds _waitForShowDelay;
-    private WaitForSeconds _waitForHideDelay;
 
     public void Init(UIPanel container)
     {
@@ -24,47 +23,44 @@ public class UIElement : MonoBehaviour
         if (_transition == null)
         {
             transform.localScale = Vector3.zero;
+            return;
         }
         _transition.Init(container);
-
-        _waitForHideDelay = new WaitForSeconds(_hideDelay);
-        _waitForShowDelay = new WaitForSeconds(_showDelay);
     }
 
     public void Show()
     {
-        StartCoroutine(IE_Show());
+        Async_Show().Forget();
     }
 
     public void Hide()
     {
-        StartCoroutine(IE_Hide());
+        Async_Hide().Forget();
     }
 
-    private IEnumerator IE_Show()
+    private async UniTaskVoid Async_Show()
     {
         _transition?.PreShowSetup();
-        yield return _waitForShowDelay;
+
+        await UniTask.Delay(System.TimeSpan.FromSeconds(_showDelay));
         if (_transition == null)
         {
             transform.localScale = Vector3.one;
-
             _parentPanel.NotifyElementShowed();
-            yield break;
+            return;
         }
 
         _transition.ShowTransition().Forget();
     }
 
-    private IEnumerator IE_Hide()
+    private async UniTaskVoid Async_Hide()
     {
-        yield return _waitForHideDelay;
+        await UniTask.Delay(System.TimeSpan.FromSeconds(_hideDelay));
         if (_transition == null)
         {
             transform.localScale = Vector3.zero;
-
             _parentPanel.NotifyElementHided();
-            yield break;
+            return;
         }
 
         _transition.HideTransition().Forget();

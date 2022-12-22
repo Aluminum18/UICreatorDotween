@@ -5,10 +5,17 @@ using UnityEngine;
 public class UIController : MonoBehaviour
 {
     [SerializeField]
+    private bool _showInitUIFromStart = true;
+    [SerializeField]
     private List<UIPanel> _UIPanels;
 
     // Store UI panel following opening order
     private Stack<UIPanel> _panelStack = new Stack<UIPanel>();
+
+    public void ShowInitPanels()
+    {
+        InitAllUIPanels().Forget();
+    }
 
     public bool IsOnTop(UIPanel panel)
     {
@@ -24,12 +31,6 @@ public class UIController : MonoBehaviour
 
     public void PushToStack(UIPanel panel)
     {
-        if (_panelStack.Count > 0)
-        {
-            var recentPanel = _panelStack.Peek();
-            recentPanel.SetInteractable(!recentPanel.IsOpening);
-        }
-
         _panelStack.Push(panel);
     }
 
@@ -48,14 +49,11 @@ public class UIController : MonoBehaviour
         }
 
         var recentPanel = _panelStack.Peek();
-        if (recentPanel.IsOpening)
+        if (recentPanel.Status == UIPanel.PanelStatus.IsOpening)
         {
-            recentPanel.SetInteractable(true);
+            return;
         }
-        else
-        {
-            PopFromStack();
-        }
+        PopFromStack();
     }
 
     public void CloseAllButInitPanels()
@@ -74,6 +72,11 @@ public class UIController : MonoBehaviour
 
     private void Start()
     {
+        if (!_showInitUIFromStart)
+        {
+            return;
+        }
+
         InitAllUIPanels().Forget();
     }
 
@@ -84,7 +87,7 @@ public class UIController : MonoBehaviour
             var panel = _UIPanels[i];
             if (panel == null)
             {
-                // Log
+                Logger.LogError($"Panel at index [{i}] is null");
                 continue;
             }
 

@@ -103,16 +103,19 @@ public class UITransition : MonoBehaviour
                         return;
                     }
 
+                    _canvasGroup.DOKill();
                     _canvasGroup.DOFade(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
                     break;
                 }
             case TransitionType.Move:
                 {
+                    transform.DOKill();
                     transform.DOLocalMove(_showTo, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
                     break;
                 }
             case TransitionType.Zoom:
                 {
+                    transform.DOKill();
                     transform.DOScale(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
                     break;
                 }
@@ -156,16 +159,19 @@ public class UITransition : MonoBehaviour
                         return;
                     }
 
+                    _canvasGroup.DOKill();
                     _canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
                     break;
                 }
             case TransitionType.Move:
                 {
+                    transform.DOKill();
                     transform.DOLocalMove(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
                     break;
                 }
             case TransitionType.Zoom:
                 {
+                    transform.DOKill();
                     transform.DOScale(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
                     break;
                 }
