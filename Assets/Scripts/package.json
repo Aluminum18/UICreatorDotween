@@ -1,0 +1,10 @@
+{
+	"name": "com.aluminum.uicreator",
+	"displayName": "UICreator",
+	"author": "Aluminum",
+	"version": "0.0.1",
+	"unity": "2018.4",
+	"description": "Common UI operations and transitions",
+	"license": "None",
+	"dependency": {}
+}
