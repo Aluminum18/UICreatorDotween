@@ -104,7 +104,7 @@ public class UITransition : MonoBehaviour
                     }
 
                     _canvasGroup.DOKill();
-                    _canvasGroup.DOFade(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
+                    //_canvasGroup.DOFade(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
                     break;
                 }
             case TransitionType.Move:
@@ -160,7 +160,7 @@ public class UITransition : MonoBehaviour
                     }
 
                     _canvasGroup.DOKill();
-                    _canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
+                    //_canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
                     break;
                 }
             case TransitionType.Move:

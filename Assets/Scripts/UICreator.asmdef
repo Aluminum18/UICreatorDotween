@@ -1,0 +1,22 @@
+{
+    "name": "UICreator",
+    "rootNamespace": "",
+    "references": [
+        "UniTask.Editor",
+        "UniTask",
+        "UniTask.Linq",
+        "DOTweenExtensionModules"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "DOTween.dll",
+        "DOTweenEditor.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
