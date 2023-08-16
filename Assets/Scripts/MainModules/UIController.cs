@@ -119,7 +119,7 @@ public class UIController : MonoBehaviour
             var panel = _UIPanels[i];
             if (panel == null)
             {
-                Logger.LogError($"Panel at index [{i}] is null");
+                Debug.LogError($"Panel at index [{i}] is null");
                 continue;
             }
 
