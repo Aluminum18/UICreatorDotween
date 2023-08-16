@@ -1,16 +1,28 @@
 ﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UIController : MonoBehaviour
 {
+    [Header("Configs")]
+    [SerializeField]
+    private bool _isGlobalUI = false;
+    public bool IsGlobalUI => _isGlobalUI;
     [SerializeField]
     private bool _showInitUIFromStart = true;
     [SerializeField]
     private List<UIPanel> _UIPanels;
 
+    [Header("Inspec")]
+    [SerializeField]
+    private List<string> _uiStack;
     // Store UI panel following opening order
     private Stack<UIPanel> _panelStack = new Stack<UIPanel>();
+    public int ShowingPanelCount => _panelStack.Count;
+
+    public static event Action OnGlobalClickerBlockerActive;
+    public static event Action OnAllGlobalClickerBlockersInactive;
 
     public void ShowInitPanels()
     {
@@ -31,7 +43,14 @@ public class UIController : MonoBehaviour
 
     public void PushToStack(UIPanel panel)
     {
+        if (0 < _panelStack.Count)
+        {
+            var recentPanel = _panelStack.Peek();
+            recentPanel.ActiveClickBlocker(!panel.HasClickBlocker);
+        }
+
         _panelStack.Push(panel);
+        _uiStack.Add(panel.name);
     }
 
     public void PopFromStack()
@@ -42,15 +61,17 @@ public class UIController : MonoBehaviour
         }
 
         _panelStack.Pop();
+        _uiStack.RemoveAt(_uiStack.Count - 1);
 
         if (_panelStack.Count == 0)
         {
             return;
         }
 
-        var recentPanel = _panelStack.Peek();
-        if (recentPanel.Status == UIPanel.PanelStatus.IsOpening)
+        var previous = _panelStack.Peek();
+        if (previous.Status == UIPanel.PanelStatus.Opened || previous.Status == UIPanel.PanelStatus.IsOpening)
         {
+            previous.ActiveClickBlocker(true);
             return;
         }
         PopFromStack();
@@ -63,11 +84,21 @@ public class UIController : MonoBehaviour
             var panel = _panelStack.Peek();
             if (panel.ShowFromStart)
             {
-                break;
+                return;
             }
 
             panel.Close();
         }
+    }
+
+    public void NotifyGlobalClickerBlockerActive()
+    {
+        OnGlobalClickerBlockerActive?.Invoke();
+    }
+
+    public void NotifyAllGlobalClickBlockerInactive()
+    {
+        OnAllGlobalClickerBlockersInactive?.Invoke();
     }
 
     private void Start()
@@ -78,6 +109,7 @@ public class UIController : MonoBehaviour
         }
 
         InitAllUIPanels().Forget();
+
     }
 
     private async UniTaskVoid InitAllUIPanels()
@@ -87,7 +119,7 @@ public class UIController : MonoBehaviour
             var panel = _UIPanels[i];
             if (panel == null)
             {
-                Debug.LogError($"Panel at index [{i}] is null");
+                Logger.LogError($"Panel at index [{i}] is null");
                 continue;
             }
 

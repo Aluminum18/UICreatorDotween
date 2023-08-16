@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,9 +14,16 @@ public class UIPanel : MonoBehaviour
     [SerializeField]
     private List<UIElement> _elements;
     [SerializeField]
+    private Image _clickBlocker;
+    public bool HasClickBlocker => _clickBlocker != null;
+    [SerializeField]
     private bool _showFromStart;
+    [SerializeField]
+    private bool _refreshWhenReopen = false;
 
     [Header("UnityEvents")]
+    [SerializeField]
+    private UnityEvent _onRefresh;
     [SerializeField]
     private UnityEvent _onStartShow;
     [SerializeField]
@@ -45,6 +53,7 @@ public class UIPanel : MonoBehaviour
     }
 
     private UIPanel _showNextAfterThisHide;
+    private Color _clickBlockerColor;
 
     public bool ShowFromStart
     {
@@ -57,7 +66,6 @@ public class UIPanel : MonoBehaviour
             _showFromStart = value;
         }
     }
-
     public void Init(UIController controller)
     {
         _canvas = GetComponent<Canvas>();
@@ -77,13 +85,26 @@ public class UIPanel : MonoBehaviour
         for (int i = 0; i < _elements.Count; i++)
         {
             _elements[i].Init(this);
+            var clickBlocker = _elements[i].GetComponent<Image>();
+            if (clickBlocker == null)
+            {
+                continue;
+            }
+            _clickBlocker = clickBlocker;
+            _clickBlockerColor = clickBlocker.color;
         }
+
+        TrackGlobalClickBlocker();
     }
 
     public void Open()
     {
         if (Status == PanelStatus.Opened || Status == PanelStatus.IsOpening)
         {
+            if (_refreshWhenReopen)
+            {
+                _onRefresh.Invoke();
+            }
             return;
         }
 
@@ -111,6 +132,7 @@ public class UIPanel : MonoBehaviour
         }
 
         _uiController.PushToStack(this);
+        ActiveClickBlocker(true);
     }
 
     public void Close()
@@ -145,6 +167,8 @@ public class UIPanel : MonoBehaviour
         {
             _elements[i].Hide();
         }
+
+        ActiveClickBlocker(false);
     }
 
     public void CloseAndOpenOther(UIPanel other)
@@ -215,6 +239,32 @@ public class UIPanel : MonoBehaviour
         transform.SetAsLastSibling();
     }
 
+    public void ActiveClickBlocker(bool active)
+    {
+        if (_clickBlocker == null)
+        {
+            return;
+        }
+        _clickBlockerColor.a = active ? 0.83f : 0f;
+        _clickBlocker.color = _clickBlockerColor;
+
+        if (!_uiController.IsGlobalUI)
+        {
+            return;
+        }
+        if (active)
+        {
+            _uiController.NotifyGlobalClickerBlockerActive();
+            return;
+        }
+        if (_uiController.ShowingPanelCount != 0)
+        {
+            return;
+        }
+
+        _uiController.NotifyAllGlobalClickBlockerInactive();
+    }
+
     private void ForcePanelToOpenedState()
     {
         _showedElements = _elements.Count;
@@ -248,5 +298,47 @@ public class UIPanel : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void TrackGlobalClickBlocker()
+    {
+        if (_uiController.IsGlobalUI)
+        {
+            return;
+        }
+
+        UIController.OnGlobalClickerBlockerActive += AdaptWithActivatedGlobalClickerBlocker;
+        UIController.OnAllGlobalClickerBlockersInactive += ApdaptWithInactiveGlobalClickerBlocker;
+    }
+
+    private void OnDisable()
+    {
+        if (_uiController == null || _uiController.IsGlobalUI)
+        {
+            return;
+        }
+
+        UIController.OnGlobalClickerBlockerActive -= AdaptWithActivatedGlobalClickerBlocker;
+        UIController.OnAllGlobalClickerBlockersInactive -= ApdaptWithInactiveGlobalClickerBlocker;
+    }
+
+    private void AdaptWithActivatedGlobalClickerBlocker()
+    {
+        if (!_uiController.IsOnTop(this))
+        {
+            return;
+        }
+
+        ActiveClickBlocker(false);
+    }
+
+    private void ApdaptWithInactiveGlobalClickerBlocker()
+    {
+        if (!_uiController.IsOnTop(this))
+        {
+            return;
+        }
+
+        ActiveClickBlocker(true);
     }
 }
