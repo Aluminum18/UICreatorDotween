@@ -1,4 +1,4 @@
-# UI Panel Lib
+# UI Panel
 Provide simple approach to manage UI panels and add UI transition
 
 https://github.com/Aluminum18/UICreatorDotween/assets/14157400/3acde8a5-efe8-4a11-b78b-cf4aca66ba3c
