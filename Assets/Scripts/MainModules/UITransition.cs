@@ -11,8 +11,6 @@ public class UITransition : MonoBehaviour
     private TransitionType _transitionType;
 
     [SerializeField]
-    private float _showDelay = 0f;
-    [SerializeField]
     private Vector3 _showFrom;
     [SerializeField]
     private Vector3 _showTo;
@@ -21,8 +19,6 @@ public class UITransition : MonoBehaviour
     [SerializeField]
     private Ease _showEaseType;
  
-    [SerializeField]
-    private float _hideDelay = 0f;
     [SerializeField]
     private Vector3 _hideFrom;
     [SerializeField]
@@ -44,6 +40,7 @@ public class UITransition : MonoBehaviour
     private UIPanel _parentPanel;
     private CanvasGroup _canvasGroup;
     private Animator _animator;
+    private bool _useFixedTimeScale = true;
 
     public void Init(UIPanel parent)
     {
@@ -90,7 +87,6 @@ public class UITransition : MonoBehaviour
 
     public async UniTaskVoid ShowTransition()
     {
-        await UniTask.Delay(TimeSpan.FromSeconds(_showDelay));
         _onStartShow.Invoke();
 
         switch (_transitionType)
@@ -104,19 +100,19 @@ public class UITransition : MonoBehaviour
                     }
 
                     _canvasGroup.DOKill();
-                    _canvasGroup.DOFade(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
+                    _canvasGroup.DOFade(_showTo.x, _showTransitionTime).SetEase(_showEaseType).OnComplete(NotifyFinishShow).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Move:
                 {
                     transform.DOKill();
-                    transform.DOLocalMove(_showTo, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
+                    transform.DOLocalMove(_showTo, _showTransitionTime).SetEase(_showEaseType).OnComplete(NotifyFinishShow).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Zoom:
                 {
                     transform.DOKill();
-                    transform.DOScale(_showTo.x, _showTransitionTime).SetEase(_showEaseType).onComplete = NotifyFinishShow;
+                    transform.DOScale(_showTo.x, _showTransitionTime).SetEase(_showEaseType).OnComplete(NotifyFinishShow).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Animation:
@@ -139,16 +135,15 @@ public class UITransition : MonoBehaviour
             default:
                 {
                     NotifyFinishShow();
-                    return;
-                }
+                    break;
+                }              
         }
     }
 
     public async UniTaskVoid HideTransition()
     {
-        await UniTask.Delay(TimeSpan.FromSeconds(_hideDelay));
         _onStartHide.Invoke();
-        
+
         switch (_transitionType)
         {
             case TransitionType.Fade:
@@ -160,19 +155,19 @@ public class UITransition : MonoBehaviour
                     }
 
                     _canvasGroup.DOKill();
-                    _canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
+                    _canvasGroup.DOFade(_hideTo.x, _hideTransitionTime).SetEase(_hideEaseType).OnComplete(NotifyFinishHide).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Move:
                 {
                     transform.DOKill();
-                    transform.DOLocalMove(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
+                    transform.DOLocalMove(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).OnComplete(NotifyFinishHide).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Zoom:
                 {
                     transform.DOKill();
-                    transform.DOScale(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).onComplete = NotifyFinishHide;
+                    transform.DOScale(_hideTo, _hideTransitionTime).SetEase(_hideEaseType).OnComplete(NotifyFinishHide).SetUpdate(_useFixedTimeScale);
                     break;
                 }
             case TransitionType.Animation:
@@ -195,7 +190,7 @@ public class UITransition : MonoBehaviour
             default:
                 {
                     NotifyFinishHide();
-                    return;
+                    break;
                 }
         }
     }

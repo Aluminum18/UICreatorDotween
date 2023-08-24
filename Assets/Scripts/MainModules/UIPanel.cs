@@ -20,6 +20,8 @@ public class UIPanel : MonoBehaviour
     private bool _showFromStart;
     [SerializeField]
     private bool _refreshWhenReopen = false;
+    [SerializeField]
+    private bool _useFixedTimeScale = true;
 
     [Header("UnityEvents")]
     [SerializeField]
@@ -84,7 +86,7 @@ public class UIPanel : MonoBehaviour
 
         for (int i = 0; i < _elements.Count; i++)
         {
-            _elements[i].Init(this);
+            _elements[i].Init(this, _useFixedTimeScale);
             var clickBlocker = _elements[i].GetComponent<Image>();
             if (clickBlocker == null)
             {

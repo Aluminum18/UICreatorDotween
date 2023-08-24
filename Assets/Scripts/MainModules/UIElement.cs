@@ -10,13 +10,14 @@ public class UIElement : MonoBehaviour
     [SerializeField]
     private float _hideDelay;
 
+    private bool _useFixedTimeScale = true;
     private UIPanel _parentPanel;
-
     private UITransition _transition;
 
-    public void Init(UIPanel container)
+    public void Init(UIPanel container, bool useFixedTimeScale = true)
     {
         _parentPanel = container;
+        _useFixedTimeScale = useFixedTimeScale;
 
         _transition = GetComponent<UITransition>();
 
@@ -42,7 +43,7 @@ public class UIElement : MonoBehaviour
     {
         _transition?.PreShowSetup();
 
-        await UniTask.Delay(System.TimeSpan.FromSeconds(_showDelay));
+        await UniTask.Delay(System.TimeSpan.FromSeconds(_showDelay), ignoreTimeScale: _useFixedTimeScale);
         if (_transition == null)
         {
             transform.localScale = Vector3.one;
@@ -55,7 +56,7 @@ public class UIElement : MonoBehaviour
 
     private async UniTaskVoid Async_Hide()
     {
-        await UniTask.Delay(System.TimeSpan.FromSeconds(_hideDelay));
+        await UniTask.Delay(System.TimeSpan.FromSeconds(_hideDelay), ignoreTimeScale: _useFixedTimeScale);
         if (_transition == null)
         {
             transform.localScale = Vector3.zero;
