@@ -26,7 +26,7 @@ Ui Stack: display UIPanel opening order during runtime. Useful for debugging
 ## UI Panel
 Control a UI unit (a popup, menu, toast...)
 
-![image](https://github.com/Aluminum18/UICreatorDotween/assets/14157400/8c36a1a7-cc00-4c4a-b479-8a8359e8586e)
+![image](https://github.com/Aluminum18/UICreatorDotween/assets/14157400/de81480c-b0c5-433d-9b14-b688216192af)
 
 **Configs**
 
@@ -37,6 +37,8 @@ Click Blocker: UI Element that plays as Click Blocker which prevents user from c
 Show From Start: show from beginning without user command
 
 Refresh When Reopen: if a Panel is opening, ask it to reopen will trigger OnRefresh() event
+
+Ignore Time Scale: time related logic (such as transition, delay, animation) is not affected by [Time.timeScale](https://docs.unity3d.com/ScriptReference/Time-timeScale.html)
 
 **Inspec**
 
