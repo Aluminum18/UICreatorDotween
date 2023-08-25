@@ -123,11 +123,13 @@ public class UITransition : MonoBehaviour
                         return;
                     }
 
+                    _animator.updateMode = _useFixedTimeScale ? AnimatorUpdateMode.UnscaledTime : AnimatorUpdateMode.Normal;
                     _animator.Play("Open");
 
-                    await UniTask.DelayFrame(1);
+                    
+                    await UniTask.DelayFrame(1, delayTiming: _useFixedTimeScale ? PlayerLoopTiming.TimeUpdate : PlayerLoopTiming.Update);
                     float clipTime = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
-                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime));
+                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime), delayTiming: _useFixedTimeScale ? PlayerLoopTiming.TimeUpdate : PlayerLoopTiming.Update);
 
                     NotifyFinishShow();
                     break;
@@ -178,11 +180,12 @@ public class UITransition : MonoBehaviour
                         return;
                     }
 
+                    _animator.updateMode = _useFixedTimeScale ? AnimatorUpdateMode.UnscaledTime : AnimatorUpdateMode.Normal;
                     _animator.Play("Close");
 
-                    await UniTask.DelayFrame(1);
+                    await UniTask.DelayFrame(1, _useFixedTimeScale ? PlayerLoopTiming.TimeUpdate : PlayerLoopTiming.Update);
                     float clipTime = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
-                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime));
+                    await UniTask.Delay(TimeSpan.FromSeconds(clipTime), delayTiming: _useFixedTimeScale ? PlayerLoopTiming.TimeUpdate : PlayerLoopTiming.Update);
 
                     NotifyFinishHide();
                     break;
