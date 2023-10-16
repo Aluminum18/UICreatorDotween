@@ -1,0 +1,16 @@
+{
+    "name": "UIPanelEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d856478080c5e444a9204fdc9fabd61d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
