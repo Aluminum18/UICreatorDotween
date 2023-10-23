@@ -29,6 +29,16 @@ public class UIController : MonoBehaviour
         InitAllUIPanels().Forget();
     }
 
+    public void CloseTopPanel()
+    {
+        if (_panelStack.Count == 0)
+        {
+            return;
+        }
+
+        _panelStack.Peek().Close();
+    }
+
     public bool IsOnTop(UIPanel panel)
     {
         if (_panelStack.Count == 0)
