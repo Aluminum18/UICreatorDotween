@@ -18,6 +18,7 @@ public class UIPanel : MonoBehaviour
     public bool HasClickBlocker => _clickBlocker != null;
     [SerializeField]
     private bool _showFromStart;
+    public bool IsInitPanel => _showFromStart;
     [SerializeField]
     private bool _refreshWhenReopen = false;
     [SerializeField]
