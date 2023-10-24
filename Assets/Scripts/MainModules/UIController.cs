@@ -36,7 +36,7 @@ public class UIController : MonoBehaviour
             return;
         }
 
-        _panelStack.Peek().Close();
+        ClosePanelIfOpened(_panelStack.Peek());
     }
 
     public void CloseTopPanelExceptInitPanel()
@@ -51,7 +51,18 @@ public class UIController : MonoBehaviour
         {
             return;
         }
-        topPanel.Close();
+
+        ClosePanelIfOpened(topPanel);
+    }
+
+    public void ClosePanelIfOpened(UIPanel panel)
+    {
+        if (panel.Status != UIPanel.PanelStatus.Opened)
+        {
+            return;
+        }
+
+        panel.Close();
     }
 
     public bool IsOnTop(UIPanel panel)
